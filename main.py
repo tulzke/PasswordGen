@@ -11,6 +11,7 @@ class Password():
         'number': 1,
         'symbol': 1
     }
+    excp = []
     password = ''
     abc = ('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'j', 'k',
            'm', 'n', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z')
@@ -22,10 +23,12 @@ class Password():
 
     def generate(self):
         self.password = ''
+        #Генерация заготовки под пароль
         while len(self.password) < self.opts['amount']:
             i = r.randint(0, len(self.Container) - 1)
             j = r.randint(0, len(self.Container[i]) - 1)
-            self.password += self.Container[i][j]
+            if self.Container[i] not in self.excp:
+                self.password += self.Container[i][j]
             continue
 
 
@@ -37,7 +40,7 @@ class Password():
         }
 
         while 0 in check.values():
-            #Первоначальная проверка
+            #Первоначальная проверка на наличие символов с дальнейшим подсчетом
             up = 0
             down = 0
             num = 0
@@ -186,6 +189,10 @@ class Core(QtWidgets.QWidget, MainWindow.Ui_Form):
         self.aaaSpin.valueChanged.connect(self.changeSpin)
         self.numberSpin.valueChanged.connect(self.changeSpin)
         self.symbolSpin.valueChanged.connect(self.changeSpin)
+        self.AAASpin.valueChanged.connect(self.limitation)
+        self.aaaSpin.valueChanged.connect(self.limitation)
+        self.numberSpin.valueChanged.connect(self.limitation)
+        self.symbolSpin.valueChanged.connect(self.limitation)
         self.amountSpin.setValue(8)
         self.AAASpin.setValue(2)
         self.aaaSpin.setValue(2)
@@ -204,15 +211,39 @@ class Core(QtWidgets.QWidget, MainWindow.Ui_Form):
             print(sender.objectName(), sender.value())
         elif sender.objectName() == 'AAASpin':
             passw.opts['ABC'] = sender.value()
+            if sender.value() == 0:
+                if passw.ABC not in passw.excp:
+                    passw.excp += [passw.ABC]
+            else:
+                if passw.ABC in passw.excp:
+                    passw.excp.remove(passw.ABC)
             print(sender.objectName(), sender.value())
         elif sender.objectName() == 'aaaSpin':
             passw.opts['abc'] = sender.value()
+            if sender.value() == 0:
+                if passw.abc not in passw.excp:
+                    passw.excp += [passw.abc]
+            else:
+                if passw.abc in passw.excp:
+                    passw.excp.remove(passw.abc)
             print(sender.objectName(), sender.value())
         elif sender.objectName() == 'numberSpin':
             passw.opts['number'] = sender.value()
+            if sender.value() == 0:
+                if passw.Numeral not in passw.excp:
+                    passw.excp += [passw.Numeral]
+            else:
+                if passw.Numeral in passw.excp:
+                    passw.excp.remove(passw.Numeral)
             print(sender.objectName(), sender.value())
         else:
             passw.opts['symbol'] = sender.value()
+            if sender.value() == 0:
+                if passw.Symbols not in passw.excp:
+                    passw.excp += [passw.Symbols]
+            else:
+                if passw.Symbols in passw.excp:
+                    passw.excp.remove(passw.Symbols)
             print(sender.objectName(), sender.value())
 
     def hideOpts(self):
@@ -229,6 +260,21 @@ class Core(QtWidgets.QWidget, MainWindow.Ui_Form):
         self.setMinimumHeight(235)
         self.optsButton.disconnect()
         self.optsButton.clicked.connect(self.hideOpts)
+
+    def limitation(self):
+        sender = self.sender()
+        AAA = self.AAASpin.value()
+        aaa = self.aaaSpin.value()
+        number = self.numberSpin.value()
+        symbol = self.symbolSpin.value()
+        amount = self.amountSpin.value()
+        summ = AAA + aaa + number + symbol
+        if summ > amount:
+            value = sender.value() - 1
+            sender.setValue(value)
+        elif summ <= 0:
+            value = sender.value() + 1
+            sender.setValue(value)
 
 passw = Password()
 #while True:
